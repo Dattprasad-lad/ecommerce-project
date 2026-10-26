@@ -1,0 +1,7 @@
+# Pass Authorization header to PHP (required for Bearer token auth in XAMPP)
+RewriteEngine On
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+# Also support mod_setenvif fallback
+SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1

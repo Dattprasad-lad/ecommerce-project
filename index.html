@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Hub - Electronics Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-color: #007bff; --secondary-color: #6c757d; --success-color: #28a745;
+            --danger-color: #dc3545; --warning-color: #ffc107; --light-color: #f8f9fa;
+            --dark-color: #343a40; --border-radius: 8px; --transition: all 0.3s ease;
+            --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #fff; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 15px rgba(0,0,0,0.1); }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; height: 70px; }
+        .logo-brand { display: flex; align-items: center; gap: 10px; font-size: 28px; font-weight: bold; color: white; cursor: pointer; transition: var(--transition); }
+        .logo-brand:hover { transform: scale(1.05); }
+        .brand-name { background: linear-gradient(45deg, #fff, #f0f0f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-menu { display: flex; list-style: none; gap: 30px; }
+        .nav-link { color: white; text-decoration: none; font-weight: 500; position: relative; transition: var(--transition); }
+        .nav-link::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background-color: #fff; transition: width 0.3s ease; }
+        .nav-link:hover::after { width: 100%; }
+        .search-box { position: relative; width: 250px; margin: 0 20px; }
+        .search-box input { width: 100%; padding: 10px 15px; border: none; border-radius: var(--border-radius); background: rgba(255,255,255,0.9); outline: none; transition: var(--transition); }
+        .search-box input:focus { background: white; box-shadow: 0 0 0 3px rgba(255,255,255,0.3); }
+        .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #667eea; }
+        .nav-icons { display: flex; align-items: center; gap: 25px; color: white; }
+        .cart-icon { position: relative; cursor: pointer; font-size: 20px; transition: var(--transition); }
+        .cart-icon:hover { transform: scale(1.1); color: #ffc107; }
+        .cart-count { position: absolute; top: -8px; right: -8px; background: #dc3545; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
+        .user-menu { position: relative; cursor: pointer; font-size: 20px; transition: var(--transition); }
+        .user-menu:hover { transform: scale(1.1); }
+        .dropdown { position: absolute; top: 40px; right: 0; background: white; border-radius: var(--border-radius); min-width: 200px; box-shadow: var(--box-shadow); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: var(--transition); overflow: hidden; }
+        .user-menu:hover .dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown a { display: block; padding: 12px 20px; color: #333; text-decoration: none; transition: var(--transition); border-bottom: 1px solid #f0f0f0; }
+        .dropdown a:last-child { border-bottom: none; }
+        .dropdown a:hover { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding-left: 25px; }
+        .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; }
+        .hamburger span { width: 25px; height: 3px; background: white; border-radius: 2px; transition: var(--transition); }
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 100px 20px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; border-radius: 20px; margin-top: 30px; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: -50%; right: -50%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(20px); } }
+        .hero-content { flex: 1; z-index: 1; }
+        .hero-title { font-size: 48px; font-weight: bold; margin-bottom: 15px; animation: slideInLeft 0.8s ease; }
+        .highlight { background: linear-gradient(45deg, #ffc107, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
+        .hero-subtitle { font-size: 20px; margin-bottom: 30px; opacity: 0.9; animation: slideInLeft 0.8s ease 0.2s both; }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+        .hero-image { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+        .floating-card { width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 80px; backdrop-filter: blur(10px); animation: floating 3s ease-in-out infinite; border: 2px solid rgba(255,255,255,0.2); }
+        @keyframes floating { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .btn { padding: 12px 30px; border: none; border-radius: var(--border-radius); cursor: pointer; font-weight: 600; transition: var(--transition); font-size: 16px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4); }
+        .btn-secondary { background: white; color: #667eea; border: 2px solid #667eea; }
+        .btn-secondary:hover { background: #667eea; color: white; }
+        .btn-large { padding: 15px 50px; font-size: 18px; }
+        .btn-block { width: 100%; }
+        .features-section { max-width: 1200px; margin: 80px auto; padding: 0 20px; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+        .feature-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 40px; border-radius: var(--border-radius); text-align: center; transition: var(--transition); cursor: pointer; position: relative; overflow: hidden; }
+        .feature-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: var(--transition); z-index: -1; }
+        .feature-card:hover::before { left: 0; }
+        .feature-card:hover { transform: translateY(-10px); color: white; }
+        .feature-card i { font-size: 48px; margin-bottom: 15px; color: #667eea; transition: var(--transition); }
+        .feature-card:hover i { color: white; transform: scale(1.2); }
+        .section-title { font-size: 42px; font-weight: bold; text-align: center; margin-bottom: 50px; color: #333; position: relative; }
+        .section-title::after { content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); width: 80px; height: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 2px; }
+        .products-section { max-width: 1200px; margin: 80px auto; padding: 0 20px; }
+        .category-filter { display: flex; gap: 15px; margin-bottom: 40px; justify-content: center; flex-wrap: wrap; }
+        .filter-btn { padding: 10px 25px; border: 2px solid #ddd; background: white; border-radius: 25px; cursor: pointer; transition: var(--transition); }
+        .filter-btn:hover, .filter-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: transparent; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 10px; overflow: hidden; transition: var(--transition); cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .product-card:hover { transform: translateY(-10px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+        .product-image { width: 100%; height: 200px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); display: flex; align-items: center; justify-content: center; font-size: 60px; position: relative; overflow: hidden; }
+        .product-image img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px 8px 0 0; }
+        .product-badge { position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .product-info { padding: 20px; }
+        .product-category { font-size: 12px; color: #667eea; font-weight: 600; margin-bottom: 8px; }
+        .product-name { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #333; }
+        .product-rating { color: #ffc107; font-size: 14px; margin-bottom: 10px; }
+        .product-price { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
+        .price-current { font-size: 20px; font-weight: bold; color: #667eea; }
+        .price-original { font-size: 14px; text-decoration: line-through; color: #999; }
+        .product-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .action-btn { padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; transition: var(--transition); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; }
+        .action-btn:hover { transform: scale(1.05); }
+        .about-section { max-width: 1200px; margin: 100px auto; padding: 0 20px; }
+        .about-content { text-align: center; margin-bottom: 50px; }
+        .about-content p { font-size: 18px; color: #666; line-height: 1.8; margin-bottom: 30px; }
+        .about-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 30px; }
+        .stat { text-align: center; }
+        .stat h4 { font-size: 32px; color: #667eea; margin-bottom: 10px; }
+        .stat p { margin: 0; color: #999; }
+        .contact-section { max-width: 1200px; margin: 100px auto; padding: 0 20px; }
+        .contact-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+        .info-card { background: white; padding: 40px; text-align: center; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: var(--transition); }
+        .info-card:hover { transform: translateY(-10px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2); }
+        .info-card i { font-size: 40px; color: #667eea; margin-bottom: 15px; }
+        .info-card h3 { margin-bottom: 10px; color: #333; }
+        .info-card p { color: #999; font-size: 14px; }
+        .footer { background: #1a1a1a; color: white; padding: 60px 20px 20px; margin-top: 100px; }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 40px; }
+        .footer-section h4 { margin-bottom: 15px; color: #667eea; }
+        .footer-section p, .footer-section a { color: #ccc; text-decoration: none; transition: var(--transition); display: block; margin-bottom: 10px; }
+        .footer-section a:hover { color: white; padding-left: 5px; }
+        .social-links { display: flex; gap: 15px; }
+        .social-links a { display: inline-flex; width: 40px; height: 40px; background: #667eea; border-radius: 50%; align-items: center; justify-content: center; margin-bottom: 0; }
+        .social-links a:hover { background: #764ba2; }
+        .footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #333; color: #999; }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 30px; border-radius: var(--border-radius); max-width: 600px; width: 90%; position: relative; animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        .close { position: absolute; right: 20px; top: 20px; font-size: 28px; font-weight: bold; color: #999; cursor: pointer; transition: var(--transition); }
+        .close:hover { color: #333; }
+        .product-detail { max-width: 900px; }
+        .detail-container { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .detail-image { width: 100%; height: 400px; background: #f0f0f0; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center; font-size: 100px; overflow: hidden; }
+        .detail-image img { width: 100%; height: 100%; object-fit: contain; border-radius: var(--border-radius); }
+        .detail-info h2 { font-size: 28px; margin-bottom: 15px; }
+        .rating { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; color: #ffc107; }
+        .price-section { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; }
+        .price { font-size: 28px; font-weight: bold; color: #667eea; }
+        .original-price { font-size: 16px; text-decoration: line-through; color: #999; }
+        .discount { background: #dc3545; color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+        .description { color: #666; line-height: 1.6; margin-bottom: 20px; }
+        .specifications { margin-bottom: 20px; }
+        .specifications h4 { margin-bottom: 10px; }
+        .specifications ul { list-style: none; padding-left: 0; }
+        .specifications li { padding: 5px 0; color: #666; }
+        .quantity-selector { margin-bottom: 20px; }
+        .quantity-control { display: flex; gap: 10px; margin-top: 10px; width: fit-content; }
+        .quantity-control button { width: 40px; height: 40px; border: 1px solid #ddd; background: white; border-radius: 5px; cursor: pointer; font-weight: bold; transition: var(--transition); }
+        .quantity-control button:hover { background: #667eea; color: white; border-color: #667eea; }
+        .quantity-control input { width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 5px; text-align: center; }
+        .cart-items { max-height: 300px; overflow-y: auto; margin-bottom: 20px; }
+        .cart-item { display: flex; gap: 15px; padding: 15px; border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 10px; align-items: center; transition: var(--transition); }
+        .cart-item:hover { background: #f9f9f9; border-color: #667eea; }
+        .cart-item-image { width: 80px; height: 80px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        .cart-item-details { flex: 1; }
+        .cart-item-name { font-weight: bold; margin-bottom: 5px; }
+        .cart-item-price { color: #667eea; font-weight: bold; }
+        .cart-item-remove { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; transition: var(--transition); }
+        .cart-item-remove:hover { background: #c82333; }
+        .cart-summary { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+        .summary-row.total { border: none; font-size: 18px; font-weight: bold; color: #667eea; }
+        @media (max-width: 768px) {
+            .nav-menu { display: none; } .hamburger { display: flex; } .hero { flex-direction: column; text-align: center; padding: 60px 20px; }
+            .hero-title { font-size: 32px; } .hero-image { margin-top: 40px; } .products-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+            .detail-container { grid-template-columns: 1fr; } .search-box { width: 150px; margin: 0 10px; } .section-title { font-size: 28px; } .modal-content { width: 95%; }
+        }
+        @media (max-width: 480px) {
+            .nav-container { height: auto; padding: 10px 20px; flex-wrap: wrap; } .search-box { display: none; }
+            .hero-title { font-size: 24px; } .hero-subtitle { font-size: 16px; } .products-grid { grid-template-columns: 1fr; }
+            .product-actions { grid-template-columns: 1fr; } .footer-content { grid-template-columns: 1fr; }
+        }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #28a745; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: var(--box-shadow); animation: slideIn 0.3s ease; z-index: 3000; }
+        @keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
+        .toast.error { background: #dc3545; }
+        .toast.warning { background: #ffc107; color: #333; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-brand">
+                <i class="fas fa-bolt"></i>
+                <span class="brand-name">Smart Hub</span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#products" class="nav-link">Products</a></li>
+                <li><a href="#about" class="nav-link">About Us</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-right">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search products...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="nav-icons">
+                    <div class="cart-icon" id="cartIcon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+                    <div class="user-menu" id="userMenu">
+                        <i class="fas fa-user-circle"></i>
+                        <div class="dropdown" id="userDropdown">
+                            <a href="javascript:void(0)" onclick="goToPage('login')">Login</a>
+                            <a href="javascript:void(0)" onclick="goToPage('signup')">Sign Up</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to <span class="highlight">Smart Hub</span></h1>
+            <p class="hero-subtitle">Premium Electronics & Gadgets at Unbeatable Prices</p>
+            <button class="btn btn-primary btn-large" onclick="document.getElementById('products').scrollIntoView({behavior: 'smooth'})">Shop Now</button>
+        </div>
+        <div class="hero-image">
+            <div class="floating-card">
+                <i class="fas fa-headphones"></i>
+            </div>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-shipping-fast"></i>
+                <h3>Fast Delivery</h3>
+                <p>Same day delivery available in Devgad</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-lock"></i>
+                <h3>Secure Payment</h3>
+                <p>100% secure transactions with encryption</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Warranty</h3>
+                <p>Extended warranty on all products</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-headset"></i>
+                <h3>24/7 Support</h3>
+                <p>Customer support available round the clock</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="products-section" id="products">
+        <h2 class="section-title">Featured Products</h2>
+        <div class="category-filter">
+            <button class="filter-btn active" onclick="filterProducts(event,'all')">All</button>
+            <button class="filter-btn" onclick="filterProducts(event,'smartphones')">Smartphones</button>
+            <button class="filter-btn" onclick="filterProducts(event,'laptops')">Laptops</button>
+            <button class="filter-btn" onclick="filterProducts(event,'accessories')">Accessories</button>
+            <button class="filter-btn" onclick="filterProducts(event,'audio')">Audio</button>
+        </div>
+        <div class="products-grid" id="productsGrid"></div>
+    </section>
+
+    <section class="about-section" id="about">
+        <div class="about-content">
+            <h2 class="section-title">About Smart Hub</h2>
+            <p>Smart Hub is Devgad's premier electronics and gadgets store, committed to providing the latest technology products at competitive prices. With over 1000+ products in stock, we ensure quality and authenticity in every purchase.</p>
+            <div class="about-stats">
+                <div class="stat"><h4>1000+</h4><p>Products</p></div>
+                <div class="stat"><h4>500+</h4><p>Happy Customers</p></div>
+                <div class="stat"><h4>50+</h4><p>Brands</p></div>
+                <div class="stat"><h4>5★</h4><p>Rating</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-section" id="contact">
+        <h2 class="section-title">Get In Touch</h2>
+        <div class="contact-info">
+            <div class="info-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>Location</h3>
+                <p>Main Market, Devgad, Maharashtra 416630</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-phone"></i>
+                <h3>Phone</h3>
+                <p>+91 XXXXX XXXXX</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-envelope"></i>
+                <h3>Email</h3>
+                <p>prakashlad078@gmail.com</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-clock"></i>
+                <h3>Hours</h3>
+                <p>10 AM - 10 PM (Daily)</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About Smart Hub</h4>
+                <p>Your trusted electronics store in Devgad offering authentic products and best prices.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#products">Products</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Smart Hub. All rights reserved. | Devgad, Maharashtra</p>
+        </div>
+    </footer>
+
+    <div class="modal" id="cartModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCart()">&times;</span>
+            <h2>Shopping Cart</h2>
+            <div class="cart-items" id="cartItems"></div>
+            <div class="cart-summary">
+                <div class="summary-row"><span>Subtotal:</span><span id="subtotal">₹0</span></div>
+                <div class="summary-row"><span>Tax (18%):</span><span id="tax">₹0</span></div>
+                <div class="summary-row total"><span>Total:</span><span id="total">₹0</span></div>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="goToCheckout()">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <div class="modal" id="productModal">
+        <div class="modal-content product-detail">
+            <span class="close" onclick="closeProductModal()">&times;</span>
+            <div class="detail-container">
+                <div class="detail-image"><img id="detailImage" src="" alt=""></div>
+                <div class="detail-info">
+                    <h2 id="detailName"></h2>
+                    <div class="rating"><span id="detailRating"></span><span class="reviews">(25 reviews)</span></div>
+                    <div class="price-section"><span class="price" id="detailPrice"></span><span class="original-price" id="detailOriginalPrice"></span><span class="discount" id="detailDiscount"></span></div>
+                    <p class="description" id="detailDescription"></p>
+                    <div class="specifications"><h4>Specifications</h4><ul id="detailSpecs"></ul></div>
+                    <div class="quantity-selector"><label>Quantity:</label><div class="quantity-control"><button onclick="decreaseQty()">-</button><input type="number" id="detailQty" value="1" min="1"><button onclick="increaseQty()">+</button></div></div>
+                    <button class="btn btn-primary btn-block" onclick="addToCartFromDetail()">Add to Cart</button>
+                    <button class="btn btn-secondary btn-block" onclick="buyNow()">Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

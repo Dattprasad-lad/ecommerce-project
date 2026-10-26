@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SmartHub — Admin Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+:root{
+  --primary:#667eea;--secondary:#764ba2;
+  --grad:linear-gradient(135deg,#667eea,#764ba2);
+  --grad-soft:linear-gradient(135deg,#667eea18,#764ba218);
+  --success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;
+  --bg:#0f0e17;--surface:#18172a;--card:#211f38;--card2:#2a2845;
+  --border:rgba(255,255,255,.07);--text:#e8e6f0;--muted:#9b97b4;
+  --radius:14px;--shadow:0 8px 32px rgba(0,0,0,.35);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+/* ── SIDEBAR ── */
+.sidebar{width:255px;min-width:255px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s;}
+.sl-logo{padding:26px 22px 18px;border-bottom:1px solid var(--border);}
+.sl-logo .brand{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sl-logo .badge{font-size:9px;font-weight:700;background:var(--grad);color:#fff;padding:2px 7px;border-radius:20px;margin-left:6px;letter-spacing:1px;vertical-align:middle;}
+.nav-block{padding:14px 10px 0;}
+.nav-lbl{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:8px 12px 4px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:10px;cursor:pointer;transition:all .2s;margin:2px 0;color:var(--muted);font-size:13.5px;font-weight:500;position:relative;}
+.nav-item:hover{background:var(--card);color:var(--text);}
+.nav-item.active{background:var(--grad-soft);color:#fff;}
+.nav-item.active::before{content:'';position:absolute;left:0;top:22%;bottom:22%;width:3px;background:var(--grad);border-radius:0 3px 3px 0;}
+.nav-item i{width:17px;text-align:center;font-size:14px;}
+.nbadge{margin-left:auto;background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;}
+.sl-foot{margin-top:auto;padding:14px;border-top:1px solid var(--border);}
+.admin-card{display:flex;align-items:center;gap:11px;background:var(--card);padding:10px;border-radius:10px;}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:#fff;flex-shrink:0;}
+.admin-name{font-size:13px;font-weight:600;}
+.admin-role{font-size:11px;color:var(--muted);}
+/* ── MAIN ── */
+.main{flex:1;margin-left:255px;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{padding:16px 30px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:90;}
+.topbar h1{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;}
+.topbar p{font-size:12px;color:var(--muted);margin-top:1px;}
+.tbr{display:flex;align-items:center;gap:10px;}
+.tbtn{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;transition:all .2s;}
+.tbtn:hover{background:var(--card2);color:var(--text);}
+.tbtn.p{background:var(--grad);color:#fff;border-color:transparent;}
+.tbtn.p:hover{opacity:.88;}
+.page{padding:26px 30px;flex:1;}
+/* ── SECTIONS ── */
+.sec{display:none;}
+.sec.active{display:block;animation:fi .3s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ── STAT CARDS ── */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:default;}
+.sc:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+.sc::after{content:'';position:absolute;top:-28px;right:-28px;width:90px;height:90px;border-radius:50%;opacity:.09;}
+.sc.bl::after{background:var(--primary)}.sc.gn::after{background:var(--success)}.sc.or::after{background:var(--warning)}.sc.rd::after{background:var(--danger)}.sc.pu::after{background:#a855f7}.sc.tl::after{background:#14b8a6}
+.si{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px;}
+.sc.bl .si{background:#667eea22;color:var(--primary)}.sc.gn .si{background:#22c55e22;color:var(--success)}.sc.or .si{background:#f59e0b22;color:var(--warning)}.sc.rd .si{background:#ef444422;color:var(--danger)}.sc.pu .si{background:#a855f722;color:#a855f7}.sc.tl .si{background:#14b8a622;color:#14b8a6}
+.sv{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;line-height:1;margin-bottom:3px;}
+.sl{font-size:11.5px;color:var(--muted);font-weight:500;}
+/* ── GRID LAYOUTS ── */
+.g2{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:18px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:18px;}
+/* ── CARD ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px;}
+.ct{font-family:'Syne',sans-serif;font-size:14.5px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.ct span{color:var(--muted);font-size:12px;font-family:'DM Sans',sans-serif;font-weight:400;}
+/* ── TABLE ── */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:9px 13px;color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);}
+td{padding:12px 13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.018);}
+/* ── STATUS ── */
+.st{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.st.pending{background:#f59e0b22;color:#f59e0b}
+.st.processing{background:#3b82f622;color:#3b82f6}
+.st.shipped{background:#8b5cf622;color:#8b5cf6}
+.st.completed{background:#22c55e22;color:#22c55e}
+.st.cancelled{background:#ef444422;color:#ef4444}
+/* ── BUTTONS ── */
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-p{background:var(--grad);color:#fff;}.btn-p:hover{opacity:.88;}
+.btn-o{background:transparent;color:var(--muted);border:1px solid var(--border);}.btn-o:hover{background:var(--card2);color:var(--text);}
+.btn-d{background:#ef444422;color:var(--danger);border:1px solid #ef444440;}.btn-d:hover{background:#ef444440;}
+.btn-s{background:#22c55e22;color:var(--success);border:1px solid #22c55e40;}
+.btn-sm{padding:4px 10px;font-size:12px;}
+/* ── FORMS ── */
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg{margin-bottom:14px;}
+label{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-bottom:5px;letter-spacing:.3px;}
+input,select,textarea{width:100%;padding:9px 13px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);}
+select option{background:var(--surface);}
+/* ── LOADING ── */
+.loading{display:flex;align-items:center;justify-content:center;padding:50px 0;color:var(--muted);flex-direction:column;gap:10px;}
+.spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* ── STOCK BAR ── */
+.sb-wrap{margin-bottom:13px;}
+.sb-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;color:var(--muted);}
+.sb-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.sb-fill{height:100%;border-radius:3px;background:var(--grad);transition:width .8s ease;}
+.sb-fill.low{background:linear-gradient(135deg,#ef4444,#f97316);}
+.sb-fill.mid{background:linear-gradient(135deg,#f59e0b,#eab308);}
+/* ── MODAL ── */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;align-items:center;justify-content:center;}
+.mo.show{display:flex;}
+.mbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px;width:430px;max-width:92vw;animation:fi .2s ease;}
+.mt{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:18px;}
+.mf{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:26px;right:26px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:13px 18px;font-size:13px;z-index:300;display:flex;align-items:center;gap:10px;transform:translateX(130%);transition:transform .3s;max-width:310px;}
+.toast.show{transform:translateX(0);}
+.toast.ok{border-left:3px solid var(--success);}
+.toast.err{border-left:3px solid var(--danger);}
+/* ── REPORT ── */
+.rs{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:20px;}
+.rbox{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
+.rbox .v{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;}
+.rbox .l{font-size:11px;color:var(--muted);margin-top:3px;}
+/* ── EMPTY ── */
+.empty{text-align:center;padding:44px 20px;color:var(--muted);}
+.empty i{font-size:36px;margin-bottom:10px;opacity:.3;display:block;}
+/* ── SEARCH BAR ── */
+.sbar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0 12px;flex:1;max-width:260px;}
+.sbar input{border:none;background:transparent;padding:8px 4px;}
+.sbar i{color:var(--muted);font-size:13px;}
+/* ── CHART ── */
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:70px;padding-top:6px;}
+.cbar{flex:1;border-radius:4px 4px 0 0;background:var(--grad);opacity:.75;min-height:4px;transition:opacity .2s;position:relative;}
+.cbar:hover{opacity:1;}
+.cbar-tip{position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:3px 7px;font-size:11px;white-space:nowrap;display:none;}
+.cbar:hover .cbar-tip{display:block;}
+/* ── HAMBURGER ── */
+.ham{display:none;background:none;border:none;color:var(--text);font-size:21px;cursor:pointer;}
+.ovbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;}
+.ovbg.show{display:block;}
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0;}
+.tab{padding:8px 18px;border-radius:8px 8px 0 0;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s;}
+.tab.active{color:var(--text);border-bottom-color:var(--primary);}
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+.main{margin-left:0}.sg{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}
+.rs{grid-template-columns:repeat(2,1fr)}.ham{display:block}}
+@media(max-width:560px){.sg{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr}.fr{grid-template-columns:1fr}.page{padding:16px 14px}}
+/* ── CONFIRM DELETE BOX ── */
+.cd-box{background:var(--bg);border:1px solid #ef444450;border-radius:10px;padding:16px;margin-top:12px;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     ADMIN LOGIN OVERLAY — shown until auth verified
+══════════════════════════════════════════════════════ -->
+<div id="admin-login-overlay" style="display:none;position:fixed;inset:0;z-index:9999;
+     background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+     align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:40px 36px;width:100%;max-width:380px;
+              box-shadow:0 20px 60px rgba(0,0,0,0.25);text-align:center;">
+    <div style="font-size:42px;margin-bottom:8px;">🛒</div>
+    <h2 style="margin:0 0 4px;font-size:22px;color:#222;">SmartHub Admin</h2>
+    <p style="color:#888;font-size:13px;margin:0 0 28px;">Sign in to access the admin panel</p>
+
+    <div style="text-align:left;margin-bottom:16px;">
+      <label style="display:block;font-weight:600;font-size:13px;margin-bottom:6px;color:#444;">Admin Email</label>
+      <input type="email" id="aLoginEmail" placeholder="admin@example.com"
+        onkeydown="if(event.key==='Enter')document.getElementById('aLoginPassword').focus()"
+        style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:9px;
+               font-size:14px;outline:none;box-sizing:border-box;
+               transition:border-color 0.2s;"
+        onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
+    </div>
+    <div style="text-align:left;margin-bottom:10px;">
+      <label style="display:block;font-weight:600;font-size:13px;margin-bottom:6px;color:#444;">Password</label>
+      <div style="position:relative;">
+        <input type="password" id="aLoginPassword" placeholder="Enter password"
+          onkeydown="if(event.key==='Enter')doAdminLogin()"
+          style="width:100%;padding:11px 40px 11px 14px;border:1.5px solid #ddd;border-radius:9px;
+                 font-size:14px;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+          onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
+        <span onclick="const i=document.getElementById('aLoginPassword');i.type=i.type==='password'?'text':'password';"
+          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:16px;color:#aaa;">👁</span>
+      </div>
+    </div>
+
+    <div id="aLoginErr" style="color:#e74c3c;font-size:13px;min-height:18px;margin-bottom:14px;text-align:left;"></div>
+
+    <button id="aLoginBtn" onclick="doAdminLogin()"
+      style="width:100%;padding:13px;background:linear-gradient(135deg,#667eea,#764ba2);
+             color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;
+             cursor:pointer;transition:opacity 0.2s;"
+      onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+      🔐 Login to Admin
+    </button>
+
+    <p style="margin:18px 0 0;font-size:12px;color:#bbb;">
+      Only admin accounts can access this panel
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MAIN DASHBOARD SHELL
+══════════════════════════════════════════════════════ -->
+<div id="app-shell" style="display:none;">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sl-logo">
+    <span class="brand">SmartHub</span><span class="badge">ADMIN</span>
+  </div>
+  <div class="nav-block">
+    <div class="nav-lbl">Main</div>
+    <div class="nav-item active" onclick="go('dashboard',this)"><i class="fas fa-chart-pie"></i> Dashboard</div>
+    <div class="nav-item" onclick="go('orders',this)"><i class="fas fa-shopping-bag"></i> Orders <span class="nbadge" id="nbadge">…</span></div>
+    <div class="nav-item" onclick="go('products',this)"><i class="fas fa-box"></i> Products</div>
+    <div class="nav-item" onclick="go('users',this)"><i class="fas fa-users"></i> Users</div>
+    <div class="nav-item" onclick="go('reports',this)"><i class="fas fa-chart-bar"></i> Reports</div>
+  </div>
+  <div class="nav-block">
+    <div class="nav-lbl">Quick</div>
+    <div class="nav-item" onclick="go('addproduct',this)"><i class="fas fa-plus-circle"></i> Add Product</div>
+    <div class="nav-item" onclick="window.open('index.html','_blank')"><i class="fas fa-store"></i> View Store</div>
+    <div class="nav-item" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+  </div>
+  <div class="sl-foot">
+    <div class="admin-card">
+      <div class="avatar">A</div>
+      <div><div class="admin-name" id="aname">Admin</div><div class="admin-role">Super Admin</div></div>
+    </div>
+  </div>
+</aside>
+<div class="ovbg" id="ovbg" onclick="closeSidebar()"></div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="ham" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <div><h1 id="ptitle">Dashboard</h1><p id="psub">Overview of your store</p></div>
+    </div>
+    <div class="tbr">
+      <button class="tbtn" onclick="refresh()"><i class="fas fa-sync-alt"></i> Refresh</button>
+      <button class="tbtn p" onclick="go('addproduct',null)"><i class="fas fa-plus"></i> Add Product</button>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ══ DASHBOARD ══ -->
+    <section class="sec active" id="sec-dashboard">
+      <div class="sg" id="stat-grid"><div class="loading" style="grid-column:1/-1"><div class="spin"></div></div></div>
+      <div class="g2">
+        <div class="card">
+          <div class="ct">Recent Orders <span>Last 10</span></div>
+          <div class="tw" id="dash-orders"><div class="loading"><div class="spin"></div></div></div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="ct">Sales — Last 7 Days</div>
+            <div class="chart-bars" id="sales-chart"></div>
+          </div>
+          <div class="card">
+            <div class="ct">Low Stock Alert <span>&lt; 10 units</span></div>
+            <div id="low-stock-wrap"><div class="loading"><div class="spin"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ ORDERS ══ -->
+    <section class="sec" id="sec-orders">
+      <div class="card">
+        <div class="ct" style="flex-wrap:wrap;gap:10px;">
+          All Orders
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;">
+            <div class="sbar"><i class="fas fa-search"></i><input id="o-search" placeholder="Search name / email / #ID" oninput="debounce(loadOrders,400)()"/></div>
+            <select id="o-status" onchange="loadOrders()" style="width:150px;">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="tw" id="orders-table"><div class="loading"><div class="spin"></div></div></div>
+      </div>
+    </section>
+
+    <!-- ══ PRODUCTS ══ -->
+    <section class="sec" id="sec-products">
+      <div id="products-content"><div class="loading"><div class="spin"></div></div></div>
+    </section>
+
+    <!-- ══ ADD / EDIT PRODUCT ══ -->
+    <section class="sec" id="sec-addproduct">
+      <div class="card" style="max-width:660px;">
+        <div class="ct" id="pform-title">Add New Product</div>
+        <form id="pform" onsubmit="submitProduct(event)">
+          <input type="hidden" id="p-id"/>
+          <div class="fr">
+            <div class="fg"><label>Product Name *</label><input id="p-name" required placeholder="e.g. iPhone 17 Pro"/></div>
+            <div class="fg"><label>Category *</label>
+              <select id="p-cat" required>
+                <option value="">Select category</option>
+                <option value="smartphones">Smartphones</option>
+                <option value="laptops">Laptops</option>
+                <option value="audio">Audio</option>
+                <option value="accessories">Accessories</option>
+              </select>
+            </div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Sale Price (₹) *</label><input type="number" id="p-price" required placeholder="79999"/></div>
+            <div class="fg"><label>Original Price (₹) *</label><input type="number" id="p-orig" required placeholder="99999"/></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Stock *</label><input type="number" id="p-stock" required placeholder="50"/></div>
+            <div class="fg"><label>Rating (1–5)</label><input type="number" id="p-rating" step="0.1" min="1" max="5" placeholder="4.5"/></div>
+          </div>
+          <div class="fg"><label>Image filename (inside /images/)</label><input id="p-img" placeholder="e.g. iphone17pro.jpg"/></div>
+          <div class="fg"><label>Description</label><textarea id="p-desc" rows="3" placeholder="Brief product description…"></textarea></div>
+          <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button type="button" class="btn btn-o" onclick="clearPForm()">Clear</button>
+            <button type="submit" class="btn btn-p" id="pform-btn"><i class="fas fa-plus"></i> Add Product</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ══ USERS ══ -->
+    <section class="sec" id="sec-users">
+      <div class="card">
+        <div class="ct" style="flex-wrap:wrap;gap:10px;">
+          All Users
+          <div class="sbar" style="margin-left:auto;"><i class="fas fa-search"></i><input id="u-search" placeholder="Search name or email" oninput="debounce(loadUsers,400)()"/></div>
+        </div>
+        <div class="tw" id="users-table"><div class="loading"><div class="spin"></div></div></div>
+      </div>
+    </section>
+
+    <!-- ══ REPORTS ══ -->
+    <section class="sec" id="sec-reports">
+      <div class="card" style="margin-bottom:18px;">
+        <div class="ct">Generate Report</div>
+        <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
+          <div class="fg" style="margin:0;flex:0 0 145px;"><label>Report Type</label>
+            <select id="rtype" onchange="toggleRType()"><option value="daily">Daily</option><option value="range">Date Range</option></select>
+          </div>
+          <div id="rdaily-wrap" class="fg" style="margin:0;"><label>Date</label><input type="date" id="rdate"/></div>
+          <div id="rrange-wrap" style="display:none;display:flex;gap:10px;flex-wrap:wrap;">
+            <div class="fg" style="margin:0;"><label>From</label><input type="date" id="rstart"/></div>
+            <div class="fg" style="margin:0;"><label>To</label><input type="date" id="rend"/></div>
+          </div>
+          <button class="btn btn-p" onclick="generateReport()" style="height:38px;margin-bottom:0;"><i class="fas fa-chart-bar"></i> Generate</button>
+        </div>
+      </div>
+      <div id="report-out"></div>
+    </section>
+
+  </div><!-- .page -->
+</main>
+
+<!-- ORDER STATUS MODAL -->
+<div class="mo" id="mo-status">
+  <div class="mbox">
+    <div class="mt">Update Order Status</div>
+    <div class="fg"><label>Order #<span id="mo-oid"></span> — <span id="mo-cust"></span></label>
+      <select id="mo-st">
+        <option value="pending">Pending</option>
+        <option value="processing">Processing</option>
+        <option value="shipped">Shipped</option>
+        <option value="completed">Completed</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div class="mf"><button class="btn btn-o" onclick="closeMo('mo-status')">Cancel</button><button class="btn btn-p" onclick="saveStatus()">Save</button></div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="mo" id="mo-confirm">
+  <div class="mbox">
+    <div class="mt" style="color:var(--danger)"><i class="fas fa-exclamation-triangle"></i> Confirm Delete</div>
+    <p id="mo-confirm-msg" style="font-size:13.5px;color:var(--muted);line-height:1.7;"></p>
+    <div class="mf"><button class="btn btn-o" onclick="closeMo('mo-confirm')">Cancel</button><button class="btn btn-d" id="mo-confirm-btn">Delete</button></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════
+const API = { admin:'admin.php', orders:'orders.php', products:'products.php' };
+
+let _activeOrder = null;
+let _curSec = 'dashboard';
+let _debTimers = {};
+
+const TITLES = {
+  dashboard:  ['Dashboard',    'Overview of your store'],
+  orders:     ['Orders',       'Manage and update order statuses'],
+  products:   ['Products',     'Product inventory & statistics'],
+  addproduct: ['Add Product',  'Fill in details to add a new product'],
+  users:      ['Users',        'Manage registered customers'],
+  reports:    ['Reports',      'Generate daily or range-based reports'],
+};
+
+// ══════════════════════════════════════════════════════════════
+// FETCH (defined later with auth token — see override below)
+// ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function go(id, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else {
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.textContent.trim().toLowerCase().includes(id.replace('addproduct','add'))) n.classList.add('active');
+    });
+  }
+  document.getElementById('sec-'+id).classList.add('active');
+  const [t,s] = TITLES[id]||[id,''];
+  document.getElementById('ptitle').textContent = t;
+  document.getElementById('psub').textContent   = s;
+  _curSec = id;
+  closeSidebar();
+  if (id==='dashboard') loadDashboard();
+  else if (id==='orders') loadOrders();
+  else if (id==='products') loadProducts();
+  else if (id==='users') loadUsers();
+  else if (id==='reports') initReports();
+}
+function refresh() { go(_curSec, document.querySelector('.nav-item.active')); }
+
+// ══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════════
+async function loadDashboard() {
+  document.getElementById('stat-grid').innerHTML = `<div class="loading" style="grid-column:1/-1"><div class="spin"></div></div>`;
+  document.getElementById('dash-orders').innerHTML = `<div class="loading"><div class="spin"></div></div>`;
+  document.getElementById('low-stock-wrap').innerHTML = `<div class="loading"><div class="spin"></div></div>`;
+
+  const res = await get(API.admin + '?action=dashboard');
+  if (!res.success) { showErr(res.message || 'Failed to load dashboard'); return; }
+  const d = res;
+
+  // Update pending badge
+  document.getElementById('nbadge').textContent = d.pending_orders || '0';
+  document.getElementById('aname').textContent  = 'Admin';
+
+  // Stat cards
+  document.getElementById('stat-grid').innerHTML = [
+    sc('bl','fa-rupee-sign','Today Sales','₹'+fmt(d.today_sales)),
+    sc('gn','fa-shopping-bag','Today Orders', d.today_orders),
+    sc('or','fa-clock','Pending',d.pending_orders),
+    sc('pu','fa-box','Products',d.total_products),
+    sc('tl','fa-users','Customers',d.total_users),
+    sc('rd','fa-chart-line','Total Revenue','₹'+fmt(d.total_revenue)),
+    sc('gn','fa-hand-holding-usd','Today Profit','₹'+fmt(d.today_profit)),
+    sc('bl','fa-piggy-bank','Total Profit','₹'+fmt(d.total_profit)),
+  ].join('');
+
+  // Sales chart
+  if (d.chart_data && d.chart_data.length) {
+    const max = Math.max(...d.chart_data.map(x => +x.sales)) || 1;
+    document.getElementById('sales-chart').innerHTML = d.chart_data.map(x => {
+      const h = Math.max(4, Math.round((+x.sales / max) * 64));
+      return `<div class="cbar" style="height:${h}px"><div class="cbar-tip">${x.d} ₹${fmt(x.sales)}</div></div>`;
+    }).join('');
+  } else {
+    document.getElementById('sales-chart').innerHTML = `<div style="color:var(--muted);font-size:12px;align-self:center;">No sales data yet</div>`;
+  }
+
+  // Recent orders
+  if (!d.recent_orders?.length) {
+    document.getElementById('dash-orders').innerHTML = empty('fa-shopping-bag','No orders yet');
+  } else {
+    document.getElementById('dash-orders').innerHTML = `<table><thead><tr><th>#ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>
+      ${d.recent_orders.map(o=>`<tr><td>#${o.id}</td><td>${esc(o.name)}</td><td>₹${fmt(o.total_amount)}</td><td><span class="st ${o.status}">${cap(o.status)}</span></td><td>${fdate(o.created_at)}</td></tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  // Low stock
+  if (!d.low_stock_products?.length) {
+    document.getElementById('low-stock-wrap').innerHTML = `<div style="text-align:center;padding:20px;color:var(--success);font-size:13px;"><i class="fas fa-check-circle"></i> All products well-stocked</div>`;
+  } else {
+    document.getElementById('low-stock-wrap').innerHTML = d.low_stock_products.map(p => {
+      const pct = Math.min(100, Math.round(p.stock / 100 * 100));
+      const cls = p.stock < 5 ? 'low' : 'mid';
+      return `<div class="sb-wrap"><div class="sb-top"><span>${esc(p.name)}</span><span style="color:${p.stock<5?'var(--danger)':'var(--warning)'}">${p.stock} left</span></div><div class="sb-track"><div class="sb-fill ${cls}" style="width:${pct}%"></div></div></div>`;
+    }).join('');
+  }
+}
+function sc(col,icon,label,val) {
+  return `<div class="sc ${col}"><div class="si"><i class="fas ${icon}"></i></div><div class="sv">${val}</div><div class="sl">${label}</div></div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ORDERS
+// ══════════════════════════════════════════════════════════════
+async function loadOrders() {
+  document.getElementById('orders-table').innerHTML = `<div class="loading"><div class="spin"></div></div>`;
+  const status = document.getElementById('o-status').value;
+  const search = document.getElementById('o-search').value.trim();
+  let url = API.admin + '?action=get_all_orders';
+  if (status) url += '&status=' + encodeURIComponent(status);
+  if (search) url += '&search=' + encodeURIComponent(search);
+  const res = await get(url);
+  if (!res.success) { document.getElementById('orders-table').innerHTML = errBox(res.message); return; }
+  const orders = res.orders || [];
+  if (!orders.length) { document.getElementById('orders-table').innerHTML = empty('fa-inbox','No orders found'); return; }
+  document.getElementById('orders-table').innerHTML = `<table><thead><tr><th>#ID</th><th>Customer</th><th>Email</th><th>Items</th><th>Amount</th><th>Address</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>
+    ${orders.map(o=>`<tr>
+      <td>#${o.id}</td><td>${esc(o.name)}</td><td style="color:var(--muted)">${esc(o.email)}</td>
+      <td>${o.items_count||'—'}</td><td>₹${fmt(o.total_amount)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12px;" title="${esc(o.delivery_address||'')}">${esc(o.delivery_address||'—')}</td>
+      <td><span class="st ${o.status}">${cap(o.status)}</span></td>
+      <td>${fdate(o.created_at)}</td>
+      <td style="display:flex;gap:5px;">
+        <button class="btn btn-o btn-sm" title="Change Status" onclick="openStatusMo(${o.id},'${o.status}','${esc(o.name)}')"><i class="fas fa-edit"></i></button>
+        ${o.status!=='cancelled'&&o.status!=='completed'?`<button class="btn btn-d btn-sm" title="Cancel Order" onclick="adminCancelOrder(${o.id})"><i class="fas fa-times"></i></button>`:''}
+      </td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+function openStatusMo(id, status, name) {
+  _activeOrder = id;
+  document.getElementById('mo-oid').textContent  = id;
+  document.getElementById('mo-cust').textContent = name;
+  document.getElementById('mo-st').value         = status;
+  document.getElementById('mo-status').classList.add('show');
+}
+async function saveStatus() {
+  const status = document.getElementById('mo-st').value;
+  closeMo('mo-status');
+  const res = await post(API.admin, {action:'update_order_status', orderId:_activeOrder, status});
+  res.success ? (toast('Order #'+_activeOrder+' → '+cap(status), 'ok'), loadOrders()) : toast(res.message||'Error', 'err');
+}
+
+function adminCancelOrder(orderId) {
+  document.getElementById('mo-confirm-msg').textContent = `Cancel Order #${orderId}? Stock will be restored and this cannot be undone.`;
+  document.getElementById('mo-confirm-btn').textContent = 'Yes, Cancel Order';
+  document.getElementById('mo-confirm-btn').onclick = async () => {
+    closeMo('mo-confirm');
+    const res = await post(API.admin, {action:'update_order_status', orderId, status:'cancelled'});
+    res.success ? (toast('Order #'+orderId+' cancelled', 'ok'), loadOrders()) : toast(res.message||'Error', 'err');
+  };
+  document.getElementById('mo-confirm').classList.add('show');
+}
+
+// ══════════════════════════════════════════════════════════════
+// PRODUCTS
+// ══════════════════════════════════════════════════════════════
+async function loadProducts() {
+  document.getElementById('products-content').innerHTML = `<div class="loading"><div class="spin"></div></div>`;
+  const [statsRes, prodsRes] = await Promise.all([
+    get(API.admin + '?action=product_stats'),
+    get(API.products + '?action=get_all')
+  ]);
+  if (!statsRes.success || !prodsRes.success) { document.getElementById('products-content').innerHTML = errBox('Failed to load products'); return; }
+
+  const cats = statsRes.categories || [];
+  const top  = statsRes.top_products || [];
+  const low  = statsRes.low_stock || [];
+  const prods= prodsRes.products || [];
+  const catColors = ['#667eea','#22c55e','#f59e0b','#ef4444','#a855f7','#14b8a6'];
+  const total = cats.reduce((s,c)=>s+(+c.total_stock),0)||1;
+  let conic='',acc=0;
+  const segs = cats.map((c,i)=>({label:cap(c.category),pct:Math.round(c.total_stock/total*100),color:catColors[i%catColors.length]}));
+  segs.forEach(s=>{conic+=`${s.color} ${acc}% ${acc+s.pct}%, `;acc+=s.pct;});
+
+  document.getElementById('products-content').innerHTML = `
+  <div class="g3">
+    <div class="card"><div class="ct">Top Selling <span>by units</span></div>
+      ${top.length ? `<table><thead><tr><th>#</th><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead><tbody>
+        ${top.map((p,i)=>`<tr><td style="color:var(--muted)">${i+1}</td><td>${esc(p.name)}</td><td><b>${p.total_sold||0}</b></td><td>₹${fmt(p.revenue)}</td></tr>`).join('')}
+      </tbody></table>` : empty('fa-chart-bar','No sales yet')}
+    </div>
+    <div class="card"><div class="ct">Stock by Category</div>
+      <div style="display:flex;align-items:center;gap:18px;">
+        <div style="width:96px;height:96px;border-radius:50%;background:conic-gradient(${conic}transparent 0);flex-shrink:0;"></div>
+        <div>${segs.map(s=>`<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:12px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0;"></div>
+          <span style="flex:1;color:var(--muted)">${s.label}</span><span style="font-weight:600">${s.pct}%</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="ct">Low Stock Alert</div>
+      ${low.length ? low.map(p=>{
+        const pct=Math.min(100,Math.round(p.stock/100*100));
+        const cls=p.stock<5?'low':'mid';
+        return `<div class="sb-wrap"><div class="sb-top"><span>${esc(p.name)}</span><span style="color:${p.stock<5?'var(--danger)':'var(--warning)'}">${p.stock}</span></div><div class="sb-track"><div class="sb-fill ${cls}" style="width:${pct}%"></div></div></div>`;
+      }).join('') : `<div style="text-align:center;padding:18px;color:var(--success);font-size:13px;"><i class="fas fa-check-circle"></i> All stocked</div>`}
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">All Products <span>${prods.length} items</span>
+      <button class="btn btn-p btn-sm" onclick="go('addproduct',null)"><i class="fas fa-plus"></i> Add</button>
+    </div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Rating</th><th>Actions</th></tr></thead><tbody>
+      ${prods.map(p=>`<tr>
+        <td style="color:var(--muted)">${p.id}</td>
+        <td>${esc(p.name)}</td>
+        <td><span class="st processing" style="font-size:10px;">${cap(p.category)}</span></td>
+        <td>₹${fmt(p.price)} <span style="color:var(--muted);font-size:11px;text-decoration:line-through;">₹${fmt(p.original_price)}</span></td>
+        <td><span style="color:${p.stock<10?'var(--danger)':p.stock<30?'var(--warning)':'inherit'}">${p.stock}</span></td>
+        <td>⭐ ${p.rating}</td>
+        <td style="display:flex;gap:5px;">
+          <button class="btn btn-o btn-sm" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-d btn-sm" onclick="confirmDeleteProduct(${p.id},'${esc(p.name)}')"><i class="fas fa-trash"></i></button>
+        </td>
+      </tr>`).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+
+async function editProduct(id) {
+  const res = await get(API.products + '?action=get_by_id&id=' + id);
+  if (!res.success) { toast('Could not load product', 'err'); return; }
+  const p = res.product;
+  document.getElementById('p-id').value       = p.id;
+  document.getElementById('p-name').value     = p.name;
+  document.getElementById('p-cat').value      = p.category;
+  document.getElementById('p-price').value    = p.price;
+  document.getElementById('p-orig').value     = p.original_price;
+  document.getElementById('p-stock').value    = p.stock;
+  document.getElementById('p-rating').value   = p.rating;
+  document.getElementById('p-img').value      = p.image||'';
+  document.getElementById('p-desc').value     = p.description||'';
+  document.getElementById('pform-title').textContent = 'Edit Product #' + p.id;
+  document.getElementById('pform-btn').innerHTML     = '<i class="fas fa-save"></i> Save Changes';
+  go('addproduct', null);
+}
+
+async function submitProduct(e) {
+  e.preventDefault();
+  const id   = document.getElementById('p-id').value;
+  const data = {
+    name:           document.getElementById('p-name').value.trim(),
+    category:       document.getElementById('p-cat').value,
+    price:          +document.getElementById('p-price').value,
+    original_price: +document.getElementById('p-orig').value,
+    stock:          +document.getElementById('p-stock').value,
+    rating:         +document.getElementById('p-rating').value||4.5,
+    image:          document.getElementById('p-img').value.trim(),
+    description:    document.getElementById('p-desc').value.trim(),
+  };
+  if (id) { data.id = id; data.action = 'update_product'; }
+  else      data.action = 'add_product';
+  const res = await post(API.admin, data);
+  res.success ? (toast(id ? 'Product updated!' : 'Product added!', 'ok'), clearPForm(), (!id && go('products',null))) : toast(res.message||'Error', 'err');
+}
+
+function clearPForm() {
+  document.getElementById('pform').reset();
+  document.getElementById('p-id').value = '';
+  document.getElementById('pform-title').textContent = 'Add New Product';
+  document.getElementById('pform-btn').innerHTML = '<i class="fas fa-plus"></i> Add Product';
+}
+
+function confirmDeleteProduct(id, name) {
+  document.getElementById('mo-confirm-msg').textContent = `Delete "${name}"? This action cannot be undone.`;
+  document.getElementById('mo-confirm-btn').onclick = async () => {
+    closeMo('mo-confirm');
+    const res = await post(API.admin, {action:'delete_product', id});
+    res.success ? (toast('Product deleted', 'ok'), loadProducts()) : toast(res.message||'Error', 'err');
+  };
+  document.getElementById('mo-confirm').classList.add('show');
+}
+
+// ══════════════════════════════════════════════════════════════
+// USERS
+// ══════════════════════════════════════════════════════════════
+async function loadUsers() {
+  document.getElementById('users-table').innerHTML = `<div class="loading"><div class="spin"></div></div>`;
+  const search = document.getElementById('u-search').value.trim();
+  let url = API.admin + '?action=get_all_users';
+  if (search) url += '&search=' + encodeURIComponent(search);
+  const res = await get(url);
+  if (!res.success) { document.getElementById('users-table').innerHTML = errBox(res.message); return; }
+  const users = res.users || [];
+  if (!users.length) { document.getElementById('users-table').innerHTML = empty('fa-users','No users found'); return; }
+  document.getElementById('users-table').innerHTML = `<table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Verified</th><th>Joined</th><th>Actions</th></tr></thead><tbody>
+    ${users.map(u=>`<tr>
+      <td style="color:var(--muted)">${u.id}</td>
+      <td>${esc(u.name)}</td>
+      <td style="color:var(--muted)">${esc(u.email)}</td>
+      <td>${esc(u.phone||'—')}</td>
+      <td><span class="st ${u.is_admin?'shipped':'pending'}">${u.is_admin?'Admin':'Customer'}</span></td>
+      <td><span style="color:${u.is_verified?'var(--success)':'var(--danger)'}">${u.is_verified?'✓ Yes':'✗ No'}</span></td>
+      <td>${fdate(u.created_at)}</td>
+      <td style="display:flex;gap:5px;">${!u.is_admin?`<button class="btn btn-d btn-sm" onclick="confirmDeleteUser(${u.id},'${esc(u.name)}')"><i class="fas fa-trash"></i></button>`:'<span style="color:var(--muted);font-size:12px;">—</span>'}</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function confirmDeleteUser(id, name) {
+  document.getElementById('mo-confirm-msg').textContent = `Delete user "${name}"? All their orders will also be deleted.`;
+  document.getElementById('mo-confirm-btn').onclick = async () => {
+    closeMo('mo-confirm');
+    const res = await post(API.admin, {action:'delete_user', userId:id});
+    res.success ? (toast('User deleted', 'ok'), loadUsers()) : toast(res.message||'Error', 'err');
+  };
+  document.getElementById('mo-confirm').classList.add('show');
+}
+
+// ══════════════════════════════════════════════════════════════
+// REPORTS
+// ══════════════════════════════════════════════════════════════
+function initReports() {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('rdate').value  = today;
+  document.getElementById('rend').value   = today;
+  document.getElementById('rstart').value = new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+}
+function toggleRType() {
+  const t = document.getElementById('rtype').value;
+  document.getElementById('rdaily-wrap').style.display = t==='daily' ? '' : 'none';
+  document.getElementById('rrange-wrap').style.display = t==='range' ? 'flex' : 'none';
+}
+async function generateReport() {
+  const type = document.getElementById('rtype').value;
+  let url;
+  if (type==='daily') url = API.admin+'?action=daily_report&date='+document.getElementById('rdate').value;
+  else url = API.admin+'?action=date_range_report&start='+document.getElementById('rstart').value+'&end='+document.getElementById('rend').value;
+  document.getElementById('report-out').innerHTML = `<div class="loading"><div class="spin"></div><span>Generating…</span></div>`;
+  const res = await get(url);
+  if (!res.success) { document.getElementById('report-out').innerHTML = errBox(res.message); return; }
+  type==='daily' ? renderDaily(res) : renderRange(res);
+}
+function renderDaily(d) {
+  document.getElementById('report-out').innerHTML = `<div class="card"><div class="ct">Daily Report — ${d.date}</div>
+    <div class="rs">
+      <div class="rbox"><div class="v">${d.total_orders}</div><div class="l">Total Orders</div></div>
+      <div class="rbox"><div class="v" style="color:var(--success)">₹${fmt(d.sales)}</div><div class="l">Sales</div></div>
+      <div class="rbox"><div class="v" style="color:var(--danger)">₹${fmt(d.losses)}</div><div class="l">Losses (Cancelled)</div></div>
+      <div class="rbox"><div class="v" style="color:var(--primary)">₹${fmt(d.profit)}</div><div class="l">Profit (30%)</div></div>
+    </div>
+    <div style="display:flex;gap:16px;font-size:13px;">
+      <span style="color:var(--success)"><i class="fas fa-check-circle"></i> Completed: ${d.completed_orders}</span>
+      <span style="color:var(--danger)"><i class="fas fa-times-circle"></i> Cancelled: ${d.cancelled_orders}</span>
+    </div>
+  </div>`;
+}
+function renderRange(d) {
+  const s = d.summary;
+  const rows = (d.daily_reports||[]).map(r=>`<tr>
+    <td>${r.date}</td><td>${r.total_orders}</td>
+    <td style="color:var(--success)">${r.completed_orders}</td>
+    <td style="color:var(--danger)">${r.cancelled_orders}</td>
+    <td>₹${fmt(r.sales)}</td><td style="color:var(--danger)">₹${fmt(r.losses)}</td>
+    <td style="color:var(--primary)">₹${fmt(r.profit)}</td>
+  </tr>`).join('');
+  document.getElementById('report-out').innerHTML = `<div class="card"><div class="ct">Range Report — ${s.start_date} to ${s.end_date}</div>
+    <div class="rs">
+      <div class="rbox"><div class="v">${s.total_orders}</div><div class="l">Total Orders</div></div>
+      <div class="rbox"><div class="v" style="color:var(--success)">₹${fmt(s.total_sales)}</div><div class="l">Total Sales</div></div>
+      <div class="rbox"><div class="v" style="color:var(--danger)">₹${fmt(s.total_losses)}</div><div class="l">Losses</div></div>
+      <div class="rbox"><div class="v" style="color:var(--primary)">₹${fmt(s.total_profit)}</div><div class="l">Profit (30%)</div></div>
+    </div>
+    ${rows ? `<div class="ct" style="margin-top:18px;">Daily Breakdown</div><div class="tw"><table><thead><tr><th>Date</th><th>Orders</th><th>Completed</th><th>Cancelled</th><th>Sales</th><th>Losses</th><th>Profit</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOGOUT
+// ══════════════════════════════════════════════════════════════
+async function doLogout() {
+  await post('auth.php', {action:'logout'}).catch(()=>{});
+  window.location.href = 'index.html';
+}
+
+// ══════════════════════════════════════════════════════════════
+// SIDEBAR (mobile)
+// ══════════════════════════════════════════════════════════════
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('ovbg').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('ovbg').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════════════
+function closeMo(id) { document.getElementById(id).classList.remove('show'); }
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+let _tTimer;
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.className = 'toast ' + type;
+  t.innerHTML = `<i class="fas fa-${type==='ok'?'check-circle':'exclamation-circle'}"></i> ${msg}`;
+  t.classList.add('show');
+  clearTimeout(_tTimer);
+  _tTimer = setTimeout(()=>t.classList.remove('show'), 3500);
+}
+function showErr(msg) { toast(msg, 'err'); }
+
+// ══════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════
+function fmt(n) {
+  const v = +n||0;
+  if (v>=1e5) return (v/1e5).toFixed(1)+'L';
+  if (v>=1e3)  return (v/1e3).toFixed(1)+'K';
+  return v.toLocaleString('en-IN');
+}
+function cap(s) { return s ? s[0].toUpperCase()+s.slice(1) : s; }
+function fdate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  if (isNaN(dt)) return d;
+  return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'})+' '+dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function empty(icon, msg) { return `<div class="empty"><i class="fas ${icon}"></i><p>${msg}</p></div>`; }
+function errBox(msg) { return `<div style="padding:20px;color:var(--danger);font-size:13px;"><i class="fas fa-exclamation-circle"></i> ${esc(msg)}</div>`; }
+function debounce(fn, ms) {
+  return function(...args) {
+    clearTimeout(_debTimers[fn]);
+    _debTimers[fn] = setTimeout(()=>fn(...args), ms);
+  };
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN AUTH CHECK
+// ══════════════════════════════════════════════════════════════
+function getAdminToken() { return localStorage.getItem('admin_token'); }
+function clearAdminSession() {
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('admin_user');
+}
+
+async function checkAdminAuth() {
+  const token = getAdminToken();
+  if (!token) { showAdminLogin(); return false; }
+
+  // Verify token is still valid and belongs to an admin
+  // Also send token as _token GET param in case Apache strips Authorization header
+  try {
+    const r = await fetch('admin.php?action=dashboard&_token=' + encodeURIComponent(token), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const d = await r.json();
+    if (!d.success) { clearAdminSession(); showAdminLogin(); return false; }
+    return true;
+  } catch(e) { clearAdminSession(); showAdminLogin(); return false; }
+}
+
+function showAdminLogin() {
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('admin-login-overlay').style.display = 'flex';
+}
+function hideAdminLogin() {
+  document.getElementById('admin-login-overlay').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+}
+
+async function doAdminLogin() {
+  const email    = document.getElementById('aLoginEmail').value.trim();
+  const password = document.getElementById('aLoginPassword').value;
+  const errEl    = document.getElementById('aLoginErr');
+  const btn      = document.getElementById('aLoginBtn');
+
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Please enter email and password.'; return; }
+
+  btn.disabled = true; btn.textContent = 'Checking...';
+
+  try {
+    const r = await fetch('auth.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'admin_login', email, password })
+    });
+    const d = await r.json();
+
+    if (d.success && d.token) {
+      localStorage.setItem('admin_token', d.token);
+      localStorage.setItem('admin_user', JSON.stringify(d.user));
+      document.getElementById('aLoginPassword').value = '';
+      hideAdminLogin();
+      const u = d.user;
+      document.getElementById('aname').textContent = u.name || 'Admin';
+      const today = new Date().toISOString().slice(0,10);
+      if (document.getElementById('rdate')) document.getElementById('rdate').value = today;
+      loadDashboard();
+    } else {
+      errEl.textContent = d.message || 'Invalid credentials.';
+      btn.disabled = false; btn.textContent = 'Login to Admin';
+    }
+  } catch(e) {
+    errEl.textContent = 'Network error. Make sure XAMPP is running.';
+    btn.disabled = false; btn.textContent = 'Login to Admin';
+  }
+}
+
+// Override fetch helpers to always send admin token
+async function get(url) {
+  const token = getAdminToken();
+  const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+  // Append token as GET param fallback (for XAMPP Apache header stripping)
+  const urlWithToken = token ? (url + (url.includes('?') ? '&' : '?') + '_token=' + encodeURIComponent(token)) : url;
+  try {
+    const r = await fetch(urlWithToken, { headers });
+    const d = await r.json();
+    if (!d.success && (d.message||'').toLowerCase().includes('unauthorized')) {
+      clearAdminSession(); showAdminLogin();
+    }
+    return d;
+  } catch(e) { return {success:false, message:'Network error'}; }
+}
+async function post(url, body) {
+  const token = getAdminToken();
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  // Include token in body as fallback (for XAMPP Apache header stripping)
+  const bodyWithToken = token ? { ...body, _token: token } : body;
+  try {
+    const r = await fetch(url, { method:'POST', headers, body: JSON.stringify(bodyWithToken) });
+    const d = await r.json();
+    if (!d.success && (d.message||'').toLowerCase().includes('unauthorized')) {
+      clearAdminSession(); showAdminLogin();
+    }
+    return d;
+  } catch(e) { return {success:false, message:'Network error'}; }
+}
+
+// Override logout
+async function doLogout() {
+  clearAdminSession();
+  showAdminLogin();
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  const today = new Date().toISOString().slice(0,10);
+  if (document.getElementById('rdate')) document.getElementById('rdate').value = today;
+
+  // Show login overlay first, check token
+  const authed = await checkAdminAuth();
+  if (authed) {
+    const saved = localStorage.getItem('admin_user');
+    if (saved) {
+      try { document.getElementById('aname').textContent = JSON.parse(saved).name || 'Admin'; } catch(e){}
+    }
+    hideAdminLogin();
+    loadDashboard();
+  }
+});
+</script>
+</div><!-- /app-shell -->
+</body>
+</html>
